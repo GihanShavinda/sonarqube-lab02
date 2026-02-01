@@ -1,5 +1,6 @@
 package main.java.com.example;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class App {
@@ -8,7 +9,9 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         Calculator calc = new Calculator();
-        logger.info(String.valueOf(calc.calculate(10, 5, "add")));
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info(String.valueOf(calc.calculate(10, 5, "add")));
+        }
         UserService service = new UserService();
         if (service.findUser("admin")) {
             service.deleteUser("admin");
