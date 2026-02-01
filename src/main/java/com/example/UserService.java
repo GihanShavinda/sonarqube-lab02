@@ -2,42 +2,38 @@ package main.java.com.example;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.logging.Logger;
 
 public class UserService {
 
-    // SECURITY ISSUE: Hardcoded credentials
-    private String password = "admin123";
+    private static final Logger logger = Logger.getLogger(UserService.class.getName());
 
-    // VULNERABILITY: SQL Injection
-    public void findUser(String username) throws Exception {
+    private final String dbUrl    = System.getenv("DB_URL");
+    private final String dbUser   = System.getenv("DB_USER");
+    private final String dbPassword = System.getenv("DB_PASSWORD");
 
-        Connection conn =
-            DriverManager.getConnection("jdbc:mysql://localhost/db",
-                    "root", password);
+    public void findUser(String username) throws SQLException {
+        String query = "SELECT * FROM users WHERE name = ?";
 
-        Statement st = conn.createStatement();
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
-        String query =
-            "SELECT * FROM users WHERE name = '" + username + "'";
-
-        st.executeQuery(query);
+            ps.setString(1, username);
+            ps.executeQuery();
+        }
     }
 
-    // SMELL: Unused method
-    public void notUsed() {
-        System.out.println("I am never called");
-    }
+    public void deleteUser(String username) throws SQLException {
+        String query = "DELETE FROM users WHERE name = ?";
 
-    // EVEN WORSE: another SQL injection
-    public void deleteUser(String username) throws Exception {
-    Connection conn =
-    DriverManager.getConnection("jdbc:mysql://localhost/db",
-    "root", password);
-    Statement st = conn.createStatement();
-    String query =
-    "DELETE FROM users WHERE name = '" + username + "'";
-    st.execute(query);
-    }
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
+            ps.setString(1, username);
+            logger.info("Deleting user: " + username);
+            ps.execute();
+        }
+    }
 }
